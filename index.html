@@ -279,6 +279,96 @@
     if (session) await checkSession();
   }
 
+async function loadMessages() {
+  if (!supabaseClient || !currentUser) return;
+
+  $("chatStatus").textContent = "Loading messages...";
+
+  const { data: rows, error } = await supabaseClient
+    .from("messages")
+    .select("id,sender_id,content,created_at")
+    .order("created_at", { ascending: true })
+    .limit(100);
+
+  if (error) {
+    $("chatStatus").textContent = "Could not load messages: " + error.message;
+    return;
+  }
+
+  const ids = [...new Set(rows.map(m => m.sender_id))];
+  let profiles = [];
+
+  if (ids.length) {
+    const result = await supabaseClient
+      .from("profiles")
+      .select("user_id,display_name")
+      .in("user_id", ids);
+
+    if (result.error) {
+      $("chatStatus").textContent = "Could not load member names.";
+      return;
+    }
+
+    profiles = result.data || [];
+  }
+
+  const list = $("messagesList");
+  list.replaceChildren();
+
+  if (!rows.length) {
+    list.textContent = "No messages yet. Start the conversation!";
+  }
+
+  rows.forEach(message => {
+    const profile = profiles.find(p => p.user_id === message.sender_id);
+    const item = document.createElement("div");
+    const name = document.createElement("strong");
+    const content = document.createElement("p");
+    const time = document.createElement("small");
+
+    name.textContent = profile?.display_name || "School Member";
+    content.textContent = message.content;
+    content.style.whiteSpace = "pre-wrap";
+    time.textContent = new Date(message.created_at).toLocaleString();
+
+    item.append(name, content, time);
+    list.appendChild(item);
+  });
+
+  $("chatStatus").textContent = "Messages loaded.";
+  list.scrollTop = list.scrollHeight;
+}
+
+async function sendMessage() {
+  if (!supabaseClient || !currentUser) return;
+
+  const content = $("messageInput").value.trim();
+
+  if (!content) {
+    $("chatStatus").textContent = "Type a message first.";
+    return;
+  }
+
+  $("sendMessageBtn").disabled = true;
+
+  const { error } = await supabaseClient
+    .from("messages")
+    .insert({ sender_id: currentUser.id, content });
+
+  $("sendMessageBtn").disabled = false;
+
+  if (error) {
+    $("chatStatus").textContent = "Message failed: " + error.message;
+    return;
+  }
+
+  $("messageInput").value = "";
+  await loadMessages();
+}
+
+$("sendMessageBtn").addEventListener("click", sendMessage);
+$("refreshMessagesBtn").addEventListener("click", loadMessages);
+
   // Sign out automatically when the session expires or changes.
   // Users can reconnect by entering the project details again after a page reload.
 })();
