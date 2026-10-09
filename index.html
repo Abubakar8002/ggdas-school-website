@@ -3,135 +3,265 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>G.G.D.A.S School | Sabon Birni</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>G.G.D.A.S School</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      color: #18304d;
-      background: #f4f8ff;
-      line-height: 1.6;
-    }
-    header {
-      background: #073b82;
-      color: white;
-      padding: 22px 16px;
-      text-align: center;
-    }
-    .logo {
-      width: 70px;
-      height: 70px;
-      border-radius: 50%;
-      background: white;
-      color: #073b82;
-      display: grid;
-      place-items: center;
-      margin: 0 auto 10px;
-      font-weight: bold;
-      font-size: 19px;
-    }
-    nav {
-      background: #fff;
-      padding: 14px 8px;
-      text-align: center;
-      box-shadow: 0 2px 8px #0001;
-    }
-    nav a {
-      color: #073b82;
-      text-decoration: none;
-      font-weight: bold;
-      margin: 0 9px;
-    }
-    .hero {
-      padding: 55px 20px;
-      text-align: center;
-      color: white;
-      background: linear-gradient(135deg, #073b82, #1689dc);
-    }
-    .hero h2 { font-size: 30px; margin: 0 0 12px; }
-    .hero p { max-width: 500px; margin: auto; }
-    main { max-width: 850px; margin: auto; padding: 22px 16px; }
-    section {
-      background: white;
-      padding: 22px;
-      margin-bottom: 20px;
-      border-radius: 12px;
-      box-shadow: 0 3px 12px #1231;
-    }
-    h2 { color: #073b82; }
-    .notice {
-      border-left: 4px solid #1689dc;
-      padding-left: 12px;
-    }
-    footer {
-      background: #073b82;
-      color: white;
-      text-align: center;
-      padding: 20px;
-    }
-    footer a { color: white; }
+    body { margin:0; font-family:Arial,sans-serif; background:#f1f5f9; color:#172554; }
+    header { background:#123b78; color:white; text-align:center; padding:24px 12px; }
+    main { max-width:650px; margin:22px auto; padding:16px; }
+    section { background:white; padding:20px; margin-bottom:16px; border-radius:12px; box-shadow:0 2px 8px #0001; }
+    input,button { box-sizing:border-box; width:100%; padding:12px; margin:7px 0; border-radius:7px; }
+    input { border:1px solid #cbd5e1; }
+    button { border:0; background:#164e9b; color:white; font-weight:bold; cursor:pointer; }
+    button.secondary { background:#64748b; }
+    button.danger { background:#b91c1c; }
+    .person { border-top:1px solid #e2e8f0; padding:12px 0; overflow-wrap:anywhere; }
+    .hidden { display:none; }
+    #message { white-space:pre-wrap; overflow-wrap:anywhere; }
   </style>
 </head>
 <body>
-  <header>
-    <div class="logo">GGDAS</div>
-    <h1>G.G.D.A.S School</h1>
-    <p>Sabon Birni Area, Sokoto State, Nigeria</p>
-  </header>
+<header>
+  <h1>G.G.D.A.S School</h1>
+  <p>Sabon Birni Area, Sokoto State</p>
+  <p>School Members Portal</p>
+</header>
 
-  <nav>
-    <a href="#home">Home</a>
-    <a href="#history">Our History</a>
-    <a href="#memories">Memories</a>
-    <a href="#contact">Contact</a>
-  </nav>
+<main>
+  <section id="setup">
+    <h2>Connect your school portal</h2>
+    <p>Enter your Supabase Project URL and Publishable key. These are saved only in this page while it is open.</p>
+    <input id="projectUrl" placeholder="https://your-project.supabase.co">
+    <input id="publicKey" placeholder="Supabase publishable key">
+    <button id="connectBtn">Connect</button>
+  </section>
 
-  <div class="hero" id="home">
-    <h2>Welcome to Our School</h2>
-    <p>A place to preserve our history, celebrate our achievements
-    and keep our school community connected.</p>
-  </div>
+  <section id="auth" class="hidden">
+    <h2>Member login or registration</h2>
+    <input id="displayName" placeholder="Your full name (for registration)">
+    <input id="email" type="email" placeholder="Email address">
+    <input id="password" type="password" placeholder="Password (at least 6 characters)">
+    <button id="signupBtn">Register as a new member</button>
+    <button id="loginBtn">Log in</button>
+    <button id="logoutBtn" class="secondary hidden">Log out</button>
+    <p id="message" role="status"></p>
+  </section>
 
-  <main>
-    <section id="history">
-      <h2>Our School History</h2>
-      <p>Welcome to the official history archive of
-      G.G.D.A.S School, Sabon Birni Area, Sokoto State.</p>
-      <p>Our school history is an important part of our identity.
-      This page will preserve our founding story, important dates,
-      former leaders, teachers, students and achievements.</p>
-      <p><strong>Our founding year:</strong> To be added</p>
-      <p><strong>Our story:</strong> The verified history of our
-      school will be added here by the administrator.</p>
-    </section>
+  <section id="statusPanel" class="hidden">
+    <h2>Your account</h2>
+    <p id="accountStatus"></p>
+  </section>
 
-    <section id="memories">
-      <h2>School Memories</h2>
-      <p class="notice">This section will hold photographs,
-      reunions, school events and memorable moments from past
-      and present members of our school community.</p>
-    </section>
+  <section id="adminPanel" class="hidden">
+    <h2>Administrator: Member approvals</h2>
+    <p>Review new members below.</p>
+    <button id="refreshBtn">Refresh pending members</button>
+    <div id="pendingList"></div>
+  </section>
 
-    <section>
-      <h2>Announcements</h2>
-      <p>School news and important announcements will appear here.</p>
-    </section>
+  <section id="chatInfo" class="hidden">
+    <h2>School Members Chat</h2>
+    <p>Your account is approved. The messaging interface will be added next.</p>
+  </section>
+</main>
 
-    <section id="contact">
-      <h2>Our Community</h2>
-      <p>This website is being developed to help our colleagues
-      preserve school history and stay connected.</p>
-      <p>Private members' chat will be added in a later step.
-      Access will require an approved account.</p>
-    </section>
-  </main>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  let supabaseClient = null;
+  let currentUser = null;
 
-  <footer>
-    <p>G.G.D.A.S School, Sabon Birni Area, Sokoto</p>
-    <p>Preserving our history for future generations.</p>
-    <p>&copy; 2026 G.G.D.A.S School</p>
-  </footer>
+  function showMessage(text) { $("message").textContent = text; }
+  function show(id, yes) { $(id).classList.toggle("hidden", !yes); }
+
+  $("connectBtn").addEventListener("click", async () => {
+    const url = $("projectUrl").value.trim().replace(/\/+$/, "");
+    const key = $("publicKey").value.trim();
+
+    if (!/^https:\/\/[a-zA-Z0-9.-]+$/.test(url) || !key) {
+      alert("Enter a valid HTTPS Project URL and your publishable key.");
+      return;
+    }
+
+    try {
+      supabaseClient = window.supabase.createClient(url, key);
+      const { error } = await supabaseClient.auth.getSession();
+      if (error) throw error;
+      show("setup", false);
+      show("auth", true);
+      showMessage("Connected. Register or log in.");
+      await checkSession();
+    } catch (e) {
+      supabaseClient = null;
+      alert("Could not connect. Check the URL and key, then try again.");
+    }
+  });
+
+  $("signupBtn").addEventListener("click", async () => {
+    if (!supabaseClient) return;
+    const name = $("displayName").value.trim();
+    const email = $("email").value.trim();
+    const password = $("password").value;
+    if (!name || !email || password.length < 6) {
+      showMessage("Enter your name, email, and a password of at least 6 characters.");
+      return;
+    }
+
+    const { data, error } = await supabaseClient.auth.signUp({
+      email, password, options: { data: { display_name: name } }
+    });
+    if (error) { showMessage(error.message); return; }
+
+    if (data.session) {
+      showMessage("Registration successful. Checking your approval status...");
+      await checkSession();
+    } else {
+      showMessage("Registration submitted. Check your email if confirmation is required, then log in. Your account must be approved by the administrator.");
+    }
+  });
+
+  $("loginBtn").addEventListener("click", async () => {
+    if (!supabaseClient) return;
+    const { error } = await supabaseClient.auth.signInWithPassword({
+      email: $("email").value.trim(),
+      password: $("password").value
+    });
+    if (error) { showMessage(error.message); return; }
+    await checkSession();
+  });
+
+  $("logoutBtn").addEventListener("click", async () => {
+    if (supabaseClient) await supabaseClient.auth.signOut();
+    currentUser = null;
+    show("statusPanel", false);
+    show("adminPanel", false);
+    show("chatInfo", false);
+    show("logoutBtn", false);
+    showMessage("You are logged out.");
+  });
+
+  async function checkSession() {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    currentUser = user;
+    show("logoutBtn", !!user);
+    show("adminPanel", false);
+    show("chatInfo", false);
+    show("statusPanel", false);
+
+    if (!user) {
+      showMessage("Please log in or register.");
+      return;
+    }
+
+    const { data: profile, error } = await supabaseClient
+      .from("profiles")
+      .select("display_name,status,role")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (error || !profile) {
+      showMessage("Could not load your profile. Confirm the profile trigger and database policies are set up correctly.");
+      return;
+    }
+
+    show("statusPanel", true);
+    $("accountStatus").textContent =
+      "Signed in as " + profile.display_name + ". Status: " + profile.status + ".";
+
+    if (profile.status !== "approved") {
+      showMessage(profile.status === "blocked"
+        ? "Your account is blocked. Contact the school administrator."
+        : "Your account is awaiting administrator approval.");
+      return;
+    }
+
+    showMessage("Welcome, " + profile.display_name + ".");
+    if (profile.role === "admin") {
+      show("adminPanel", true);
+      await loadPending();
+    } else {
+      show("chatInfo", true);
+    }
+  }
+
+  async function loadPending() {
+    if (!currentUser) return;
+    const { data: me, error: meError } = await supabaseClient
+      .from("profiles").select("role,status")
+      .eq("user_id", currentUser.id).maybeSingle();
+
+    if (meError || !me || me.role !== "admin" || me.status !== "approved") {
+      $("pendingList").textContent = "Administrator access required.";
+      return;
+    }
+
+    const { data, error } = await supabaseClient
+      .from("profiles")
+      .select("user_id,display_name,status,created_at")
+      .eq("status", "pending")
+      .order("created_at", { ascending: true });
+
+    const list = $("pendingList");
+    list.replaceChildren();
+
+    if (error) {
+      list.textContent = "Unable to load members: " + error.message;
+      return;
+    }
+    if (!data.length) {
+      list.textContent = "There are no pending members.";
+      return;
+    }
+
+    data.forEach(person => {
+      const item = document.createElement("div");
+      item.className = "person";
+      const name = document.createElement("p");
+      name.textContent = person.display_name + " — Pending";
+      item.appendChild(name);
+
+      const approve = document.createElement("button");
+      approve.textContent = "Approve member";
+      approve.addEventListener("click", () => updateMember(person.user_id, "approved"));
+      item.appendChild(approve);
+
+      const block = document.createElement("button");
+      block.textContent = "Block member";
+      block.className = "danger";
+      block.addEventListener("click", () => updateMember(person.user_id, "blocked"));
+      item.appendChild(block);
+      list.appendChild(item);
+    });
+  }
+
+  async function updateMember(userId, newStatus) {
+    if (!currentUser) return;
+    const action = newStatus === "approved" ? "approve" : "block";
+    if (!confirm("Are you sure you want to " + action + " this member?")) return;
+
+    const { error } = await supabaseClient
+      .from("profiles")
+      .update({ status: newStatus })
+      .eq("user_id", userId);
+
+    if (error) {
+      alert("Update failed: " + error.message);
+      return;
+    }
+    await loadPending();
+  }
+
+  $("refreshBtn").addEventListener("click", loadPending);
+
+  async function checkSavedSession() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) await checkSession();
+  }
+
+  // Sign out automatically when the session expires or changes.
+  // Users can reconnect by entering the project details again after a page reload.
+})();
+</script>
 </body>
 </html>
