@@ -197,12 +197,15 @@
     }
 
     showMessage("Welcome, " + profile.display_name + ".");
-    if (profile.role === "admin") {
-      show("adminPanel", true);
-      await loadPending();
-    } else {
-      show("chatInfo", true);
-    }
+    
+show("chatInfo", true);
+await loadMessages();
+
+if (profile.role === "admin") {
+  show("adminPanel", true);
+  await loadPending();
+}
+
   }
 
   async function loadPending() {
