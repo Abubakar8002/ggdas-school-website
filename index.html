@@ -60,10 +60,30 @@
     <div id="pendingList"></div>
   </section>
 
-  <section id="chatInfo" class="hidden">
-    <h2>School Members Chat</h2>
-    <p>Your account is approved. The messaging interface will be added next.</p>
-  </section>
+  
+<section id="chatInfo" class="hidden">
+  <h2>G.G.D.A.S School Private Chat</h2>
+  <p>Chat with approved school colleagues.</p>
+
+  <button id="refreshMessagesBtn" type="button">
+    Refresh messages
+  </button>
+
+  <div id="messagesList" style="max-height:350px;overflow-y:auto;padding:10px;background:#f1f5f9;border-radius:8px">
+    Messages will appear here.
+  </div>
+
+  <textarea id="messageInput" maxlength="2000"
+    placeholder="Write your message..." rows="3"
+    style="width:100%;box-sizing:border-box;padding:12px;margin-top:12px"></textarea>
+
+  <button id="sendMessageBtn" type="button">
+    Send message
+  </button>
+
+  <p id="chatStatus" role="status"></p>
+</section>
+
 </main>
 
 <script>
